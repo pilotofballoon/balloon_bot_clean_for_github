@@ -1,0 +1,70 @@
+‘âàãªâãà  ¯ ¯®ª
+‘¥à¨©­ë© ­®¬¥à â®¬ : C990-52C0
+C:.
+³   .env
+³   bot.py
+³   config.py
+³   credentials.json
+³   keyboards.py
+³   main.py
+³   README.md
+³   requirements.txt
+³   states.py
+³   structure.txt
+³   
+ÃÄÄÄdata
+³   ³   messages.py
+³   ³   __init__.py
+³   ³   
+³   ÀÄÄÄ__pycache__
+³           messages.cpython-312.pyc
+³           __init__.cpython-312.pyc
+³           
+ÃÄÄÄhandlers
+³   ³   about.py
+³   ³   balloon.py
+³   ³   booking.py
+³   ³   common.py
+³   ³   contacts.py
+³   ³   ski.py
+³   ³   start.py
+³   ³   __init__.py
+³   ³   
+³   ÀÄÄÄ__pycache__
+³           about.cpython-312.pyc
+³           balloon.cpython-312.pyc
+³           booking.cpython-312.pyc
+³           common.cpython-312.pyc
+³           contacts.cpython-312.pyc
+³           ski.cpython-312.pyc
+³           start.cpython-312.pyc
+³           __init__.cpython-312.pyc
+³           
+ÃÄÄÄphotos
+³       about.JPG
+³       balloon.JPG
+³       contacts.jpg
+³       family.JPG
+³       faq.JPG
+³       group.JPG
+³       ski.jpg
+³       solo.JPG
+³       start.jpg
+³       
+ÃÄÄÄservices
+³   ³   google_sheets.py
+³   ³   __init__.py
+³   ³   
+³   ÀÄÄÄ__pycache__
+³           google_sheets.cpython-312.pyc
+³           __init__.cpython-312.pyc
+³           
+ÃÄÄÄwheels
+³       aiogram-3.20.0.post0-py3-none-any.whl
+³       aiohttp-3.11.18-cp312-cp312-win_amd64.whl
+³       
+ÀÄÄÄ__pycache__
+        config.cpython-312.pyc
+        keyboards.cpython-312.pyc
+        states.cpython-312.pyc
+        
