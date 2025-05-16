@@ -2,11 +2,14 @@
 ‘¥à¨©­ë© ­®¬¥à â®¬ : C990-52C0
 C:.
 ³   .env
+³   .gitignore
 ³   bot.py
 ³   config.py
 ³   credentials.json
 ³   keyboards.py
 ³   main.py
+³   procfile.py
+³   python
 ³   README.md
 ³   requirements.txt
 ³   states.py
