@@ -1,4 +1,3 @@
-# handlers/booking.py
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
@@ -36,7 +35,12 @@ def is_valid_date(date_text: str) -> bool:
 # --- Начало бронирования ---
 @router.callback_query(F.data.startswith("book_"))
 async def start_booking(callback: CallbackQuery, state: FSMContext):
-    program = callback.data.split("_")[1]
+    parts = callback.data.split("_")
+    if len(parts) < 2:
+        await callback.message.answer("❌ Неверный запрос.")
+        return
+
+    program = parts[1]
     await state.set_state(BookingStates.name)
     await state.update_data(program=program)
 
@@ -45,6 +49,7 @@ async def start_booking(callback: CallbackQuery, state: FSMContext):
     for btn in kb:
         builder.button(**btn)
     builder.adjust(1)
+
     await callback.message.edit_caption(
         caption="Введите ваше имя для начала бронирования:",
         reply_markup=builder.as_markup()
@@ -57,13 +62,16 @@ async def process_name(message: Message, state: FSMContext):
     if not name.replace(" ", "").isalpha():
         await message.answer("❌ Имя должно содержать только буквы.")
         return
+
     await state.update_data(name=name)
     await state.set_state(BookingStates.phone)
+
     kb = [{"text": "⬅️ Назад", "callback_data": "balloon_menu"}]
     builder = InlineKeyboardBuilder()
     for btn in kb:
         builder.button(**btn)
     builder.adjust(1)
+
     await message.answer("📞 Укажите ваш телефон:\nПример: +79001234567", reply_markup=builder.as_markup())
 
 # --- Шаг 2: Телефон ---
@@ -73,6 +81,7 @@ async def process_phone(message: Message, state: FSMContext):
     if not is_valid_phone(phone):
         await message.answer("❌ Введите корректный номер телефона.\nПример: +79001234567")
         return
+
     await state.update_data(phone=phone)
     await state.set_state(BookingStates.people_count)
 
@@ -156,7 +165,7 @@ async def finalize_booking(message: Message, state: FSMContext):
 👤 Имя: {data['name']}
 📞 Телефон: {data['phone']}
 🎈 Программа: {data['program'].title()}
-👥 Количество человек: {data['people_count']}
+👥 Кол-во: {data['people_count']}
 📅 Желаемая дата: {date}
 Нажмите \"✅ Отправить\", чтобы завершить бронирование.
 """
@@ -175,6 +184,14 @@ async def finalize_booking(message: Message, state: FSMContext):
 @router.callback_query(F.data == "submit_booking")
 async def submit_booking(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
+
+    required_keys = ["name", "phone", "program", "people_count", "date"]
+    missing_keys = [key for key in required_keys if key not in data]
+
+    if missing_keys:
+        await callback.message.answer(f"❌ Не все данные собраны: {', '.join(missing_keys)}")
+        return
+
     name = data["name"]
     phone = data["phone"]
     program = data["program"]
@@ -185,24 +202,32 @@ async def submit_booking(callback: CallbackQuery, state: FSMContext):
     total_price = PRICE_TABLE.get(program, {}).get(int(people_count) if "+" not in people_count else people_count, "Неизвестно")
 
     # 📅 Дата звонка
-    flight_date = datetime.strptime(date, "%d.%m.%Y")
-    call_date = (flight_date - timedelta(days=2)).strftime("%d.%m.%y")
+    try:
+        flight_date = datetime.strptime(date, "%d.%m.%Y")
+        call_date = (flight_date - timedelta(days=2)).strftime("%d.%m.%y")
+    except ValueError:
+        await callback.message.answer("❌ Неверный формат даты.")
+        return
 
     # 📥 Формируем данные для Google Sheets
     sheet_data = {
-        "name": name,
-        "phone": phone,
-        "program": program.title(),
-        "people_count": people_count,
-        "date": date,
-        "sum": str(total_price),
-        "call_date": call_date
+        "Имя": name,
+        "Телефон": phone,
+        "Программа": program.title(),
+        "Кол-во": people_count,
+        "Дата полета": date,
+        "Сумма": str(total_price),
+        "Дата звонка": call_date
     }
 
     # 📄 Записываем в таблицу
-    add_booking_to_sheet(sheet_data)
+    try:
+        add_booking_to_sheet(sheet_data)
+    except Exception as e:
+        await callback.message.answer("❌ Произошла ошибка при отправке заявки.")
+        print("Ошибка записи в таблицу:", e)
 
-    # 📬 Отправляем всем админам
+    # 📬 Уведомление админам
     from config import ADMINS
     for admin_id in ADMINS:
         try:
@@ -213,12 +238,13 @@ async def submit_booking(callback: CallbackQuery, state: FSMContext):
                 f"📞 Телефон: {phone}\n"
                 f"🎈 Программа: {program.title()}\n"
                 f"👥 Кол-во: {people_count}\n"
-                f"📅 Дата: {date}"
+                f"📅 Дата: {date}",
+                parse_mode="Markdown"
             )
         except Exception as e:
             print(f"Ошибка отправки админу {admin_id}: {e}")
 
-    # 📨 Отправляем пользователю подтверждение
+    # 📨 Подтверждение пользователю
     confirmation = f"""
 ✅ *Заявка принята!*
 
@@ -233,12 +259,14 @@ async def submit_booking(callback: CallbackQuery, state: FSMContext):
 
 ⚠️ Полёт состоится при благоприятных погодных условиях.
 """
+
     media = InputMediaPhoto(media=FSInputFile("photos/balloon.jpg"), caption=confirmation)
     kb = [{"text": "⬅️ Назад", "callback_data": "balloon_menu"}]
     builder = InlineKeyboardBuilder()
     for btn in kb:
         builder.button(**btn)
     builder.adjust(1)
+
     await callback.message.edit_media(media=media, reply_markup=builder.as_markup())
     await callback.message.answer(confirmation)
 

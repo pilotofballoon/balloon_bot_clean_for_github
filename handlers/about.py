@@ -1,16 +1,20 @@
 # about.py
 from aiogram import Router, F
-from aiogram.types import CallbackQuery
-from aiogram.types import InputMediaPhoto, FSInputFile
-from keyboards import back_button_keyboard
+from aiogram.types import CallbackQuery, Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder  # ⬅️ Вот это добавил
+from states import BookingStates
+from data.messages import ABOUT_CLUB
+from keyboards import get_main_menu_keyboard
 
 router = Router()
 
 @router.callback_query(F.data == "about")
 async def show_about(callback: CallbackQuery):
-    about_text = """
-ℹ️ *О Нас*
-Мы занимаемся полетами на воздушных шарах в Сочи и обучением катанию на горных лыжах.
-"""
-    media = InputMediaPhoto(media=FSInputFile("photos/about.jpg"), caption=about_text)
-    await callback.message.edit_media(media=media, reply_markup=back_button_keyboard("back_to_main"))
+    kb = [{"text": "⬅️ Назад", "callback_data": "main_menu"}]
+    builder = InlineKeyboardBuilder()
+    for btn in kb:
+        builder.button(**btn)
+    builder.adjust(1)
+
+    media = InputMediaPhoto(media=FSInputFile("photos/about.JPG"), caption=ABOUT_CLUB)
+    await callback.message.edit_media(media=media, reply_markup=builder.as_markup())
