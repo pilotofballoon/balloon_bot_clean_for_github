@@ -1,10 +1,11 @@
-# about.py
+# handlers/about.py
+
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder  # ⬅️ Вот это добавил
-from states import BookingStates
+from aiogram.types import CallbackQuery
+from aiogram.types import InputMediaPhoto, FSInputFile  # ⬅️ Эти импорты были упущены
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from data.messages import ABOUT_CLUB
-from keyboards import get_main_menu_keyboard
+from keyboards import main_menu_keyboard
 
 router = Router()
 

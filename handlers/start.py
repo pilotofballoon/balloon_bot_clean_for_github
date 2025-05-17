@@ -2,7 +2,7 @@
 from aiogram import Router, F
 from aiogram.types import Message
 from aiogram.filters import CommandStart
-from aiogram.types import FSInputFile
+from aiogram.types import InputMediaPhoto, FSInputFile
 from keyboards import main_menu_keyboard
 from data.messages import START_MESSAGE
 

@@ -229,6 +229,7 @@ async def submit_booking(callback: CallbackQuery, state: FSMContext):
 
     # 📬 Уведомление админам
     from config import ADMINS
+
     for admin_id in ADMINS:
         try:
             await callback.bot.send_message(
@@ -244,7 +245,7 @@ async def submit_booking(callback: CallbackQuery, state: FSMContext):
         except Exception as e:
             print(f"Ошибка отправки админу {admin_id}: {e}")
 
-    # 📨 Подтверждение пользователю
+    # 📨 Подтверждение пользователю + новая кнопка
     confirmation = f"""
 ✅ *Заявка принята!*
 
@@ -255,22 +256,22 @@ async def submit_booking(callback: CallbackQuery, state: FSMContext):
 📅 Дата: {date}
 💰 Сумма: {total_price}₽
 
-Мы свяжемся с вами заранее, чтобы уточнить детали полёта.
-
 ⚠️ Полёт состоится при благоприятных погодных условиях.
 """
 
-    media = InputMediaPhoto(media=FSInputFile("photos/balloon.jpg"), caption=confirmation)
-    kb = [{"text": "⬅️ Назад", "callback_data": "balloon_menu"}]
+    kb = [
+        {"text": "🧳 Посмотреть процедуру полёта", "callback_data": "flight_procedure"},
+        {"text": "⬅️ Назад", "callback_data": "balloon_menu"}
+    ]
     builder = InlineKeyboardBuilder()
     for btn in kb:
         builder.button(**btn)
     builder.adjust(1)
 
+    media = InputMediaPhoto(media=FSInputFile("photos/balloon.jpg"), caption=confirmation)
     await callback.message.edit_media(media=media, reply_markup=builder.as_markup())
     await callback.message.answer(confirmation)
 
-    # 🧹 Очищаем состояние
     await state.clear()
 
 # --- Шаг 6: Отмена ---
