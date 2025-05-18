@@ -1,0 +1,5 @@
+aiogram==3.20.0.post0
+aiohttp==3.11.18
+gspread==6.2.1
+oauth2client==4.1.3
+python-dotenv==1.1.0
